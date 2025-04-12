@@ -1,4 +1,12 @@
 edu/nyu/cs9053/javos/JavOS.class
-edu/nyu/cs9053/javos/JavOSWindow.class
+edu/nyu/cs9053/javos/apps/Terminal.class
+edu/nyu/cs9053/javos/apps/ProcessManager$ProcessStatus.class
+edu/nyu/cs9053/javos/apps/CommandInterpreter$Command.class
 edu/nyu/cs9053/javos/LoginController.class
+edu/nyu/cs9053/javos/apps/Notepad.class
+edu/nyu/cs9053/javos/apps/ProcessManager$Process.class
+edu/nyu/cs9053/javos/JavOSWindow.class
+edu/nyu/cs9053/javos/apps/Terminal$1.class
+edu/nyu/cs9053/javos/apps/ProcessManager.class
 edu/nyu/cs9053/javos/DesktopController.class
+edu/nyu/cs9053/javos/apps/CommandInterpreter.class

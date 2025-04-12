@@ -1,5 +1,7 @@
 package edu.nyu.cs9053.javos;
 
+import edu.nyu.cs9053.javos.apps.Terminal;
+import edu.nyu.cs9053.javos.apps.Notepad;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -72,25 +74,35 @@ public class DesktopController {
         }
         
         try {
-            JavOSWindow window = new JavOSWindow(appName, this);
-            runningApps.put(appName, window);
-            desktopPane.getChildren().add(window);
-            
-            // Add to taskbar
-            Button taskButton = new Button(appName);
-            taskButton.getStyleClass().add("taskbar-item");
-            taskButton.setOnAction(e -> window.focus());
-            taskbarItems.getChildren().add(taskButton);
-            
-            window.setOnClose(() -> {
-                desktopPane.getChildren().remove(window);
-                taskbarItems.getChildren().remove(taskButton);
-                runningApps.remove(appName);
-            });
-            
+            JavOSWindow window = createApp(appName);
+            if (window != null) {
+                runningApps.put(appName, window);
+                desktopPane.getChildren().add(window);
+                
+                // Add to taskbar
+                Button taskButton = new Button(appName);
+                taskButton.getStyleClass().add("taskbar-item");
+                taskButton.setOnAction(e -> window.focus());
+                taskbarItems.getChildren().add(taskButton);
+                
+                window.setOnClose(() -> {
+                    desktopPane.getChildren().remove(window);
+                    taskbarItems.getChildren().remove(taskButton);
+                    runningApps.remove(appName);
+                });
+            }
         } catch (Exception e) {
             showError("Failed to launch " + appName);
         }
+    }
+    
+    private JavOSWindow createApp(String appName) {
+        return switch (appName) {
+            case "Terminal" -> new Terminal(this);
+            case "Notepad" -> new Notepad(this);
+            // Add other apps here as they are implemented
+            default -> null;
+        };
     }
     
     private void showError(String message) {

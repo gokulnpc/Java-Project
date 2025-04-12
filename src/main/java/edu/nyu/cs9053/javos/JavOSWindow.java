@@ -17,10 +17,12 @@ public class JavOSWindow extends VBox {
     private Runnable onCloseHandler;
     private boolean isMaximized = false;
     private double savedX, savedY, savedWidth, savedHeight;
+    private Label titleLabel;
     
     public JavOSWindow(String title, DesktopController desktop) {
         this.title = title;
         this.desktop = desktop;
+        this.titleLabel = new Label(title);
         
         getStyleClass().add("javos-window");
         setupWindow();
@@ -49,7 +51,6 @@ public class JavOSWindow extends VBox {
         
         windowControls.getChildren().addAll(closeBtn, minimizeBtn, maximizeBtn);
         
-        Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("window-title");
         
         Region spacer = new Region();
@@ -144,5 +145,9 @@ public class JavOSWindow extends VBox {
     
     public void setOnClose(Runnable handler) {
         this.onCloseHandler = handler;
+    }
+
+    protected void setTitle(String newTitle) {
+        titleLabel.setText(newTitle);
     }
 } 
