@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane fx:controller="edu.nyu.cs9053.javos.DesktopController" 
+            styleClass="desktop-container" 
+            xmlns:fx="http://javafx.com/fxml">
+            
+    <!-- Desktop Area -->
+    <center>
+        <StackPane fx:id="desktopPane" styleClass="desktop-pane">
+            <!-- Windows will be added here dynamically -->
+        </StackPane>
+    </center>
+    
+    <!-- Taskbar -->
+    <bottom>
+        <HBox styleClass="taskbar">
+            <!-- Start Menu Button -->
+            <Button fx:id="startButton" text="JavOS" styleClass="start-button" onAction="#showStartMenu"/>
+            
+            <!-- Running Applications -->
+            <HBox fx:id="taskbarItems" styleClass="taskbar-items" HBox.hgrow="ALWAYS"/>
+            
+            <!-- System Tray -->
+            <HBox styleClass="system-tray">
+                <Label fx:id="clockLabel" styleClass="clock-label"/>
+            </HBox>
+        </HBox>
+    </bottom>
+</BorderPane> 

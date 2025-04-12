@@ -1,0 +1,177 @@
+.login-container {
+  -fx-background-color: #2c3e50;
+  -fx-background-radius: 10;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 10, 0, 0, 0);
+}
+
+.login-title {
+  -fx-font-size: 32px;
+  -fx-font-weight: bold;
+  -fx-fill: #ecf0f1;
+}
+
+.login-field {
+  -fx-background-color: #34495e;
+  -fx-text-fill: #ecf0f1;
+  -fx-prompt-text-fill: #bdc3c7;
+  -fx-background-radius: 5;
+  -fx-padding: 10;
+  -fx-min-width: 200;
+}
+
+.login-button {
+  -fx-background-color: #3498db;
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+  -fx-background-radius: 5;
+  -fx-padding: 10 20;
+  -fx-cursor: hand;
+}
+
+.login-button:hover {
+  -fx-background-color: #2980b9;
+}
+
+.error-label {
+  -fx-text-fill: #e74c3c;
+  -fx-font-size: 12px;
+}
+
+/* Desktop Styles */
+.desktop-container {
+  -fx-background-color: #1e272e;
+}
+
+.desktop-pane {
+  -fx-background-image: url("wallpaper.jpg");
+  -fx-background-size: cover;
+  -fx-background-position: center center;
+  -fx-background-repeat: no-repeat;
+}
+
+/* Taskbar Styles */
+.taskbar {
+  -fx-background-color: rgba(47, 54, 64, 0.95);
+  -fx-padding: 5;
+  -fx-spacing: 5;
+  -fx-alignment: center-left;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 10, 0, 0, 0);
+}
+
+.start-button {
+  -fx-background-color: #3498db;
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+  -fx-min-width: 60;
+  -fx-cursor: hand;
+}
+
+.start-button:hover {
+  -fx-background-color: #2980b9;
+}
+
+.taskbar-item {
+  -fx-background-color: rgba(53, 59, 72, 0.8);
+  -fx-text-fill: white;
+  -fx-padding: 5 10;
+  -fx-cursor: hand;
+}
+
+.taskbar-item:hover {
+  -fx-background-color: #40739e;
+}
+
+.clock-label {
+  -fx-text-fill: white;
+  -fx-padding: 0 10;
+}
+
+/* Start Menu Styles */
+.start-menu {
+  -fx-background-color: rgba(47, 54, 64, 0.95);
+  -fx-padding: 10;
+  -fx-spacing: 5;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 10, 0, 0, 0);
+}
+
+.start-menu-item {
+  -fx-background-color: transparent;
+  -fx-text-fill: white;
+  -fx-padding: 10;
+  -fx-min-width: 150;
+  -fx-alignment: center-left;
+  -fx-cursor: hand;
+}
+
+.start-menu-item:hover {
+  -fx-background-color: rgba(64, 115, 158, 0.8);
+}
+
+/* Window Styles */
+.javos-window {
+  -fx-background-color: rgba(47, 54, 64, 0.95);
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 10, 0, 0, 0);
+  -fx-min-width: 300;
+  -fx-min-height: 200;
+  -fx-background-radius: 6;
+}
+
+.window-title-bar {
+  -fx-background-color: rgba(53, 59, 72, 0.95);
+  -fx-padding: 5 10;
+  -fx-spacing: 5;
+  -fx-alignment: center-left;
+  -fx-background-radius: 6 6 0 0;
+}
+
+.window-title {
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+}
+
+/* macOS Window Controls */
+.window-controls {
+  -fx-spacing: 8;
+  -fx-padding: 5 10;
+}
+
+.window-button {
+  -fx-background-radius: 50%;
+  -fx-min-width: 12;
+  -fx-min-height: 12;
+  -fx-max-width: 12;
+  -fx-max-height: 12;
+  -fx-cursor: hand;
+  -fx-border-width: 0;
+  -fx-padding: 0;
+}
+
+.close-button {
+  -fx-background-color: #ff5f56;
+}
+
+.close-button:hover {
+  -fx-background-color: #ff4743;
+}
+
+.minimize-button {
+  -fx-background-color: #ffbd2e;
+}
+
+.minimize-button:hover {
+  -fx-background-color: #ffb31a;
+}
+
+.maximize-button {
+  -fx-background-color: #27c93f;
+}
+
+.maximize-button:hover {
+  -fx-background-color: #23b939;
+}
+
+.window-content {
+  -fx-background-color: rgba(47, 54, 64, 0.95);
+  -fx-padding: 10;
+  -fx-background-radius: 0 0 6 6;
+}
