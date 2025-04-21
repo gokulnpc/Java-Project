@@ -155,12 +155,33 @@
 .taskbar-item {
   -fx-background-color: rgba(53, 59, 72, 0.8);
   -fx-text-fill: white;
-  -fx-padding: 5 10;
+  -fx-padding: 5 15;
   -fx-cursor: hand;
+  -fx-background-radius: 4;
+  -fx-min-width: 100px;
+  -fx-max-width: 100px;
+  -fx-alignment: center;
 }
 
 .taskbar-item:hover {
-  -fx-background-color: #40739e;
+  -fx-background-color: rgba(64, 115, 158, 0.8);
+}
+
+.taskbar-item-focused {
+  -fx-background-color: rgba(52, 152, 219, 0.8);
+}
+
+.taskbar-item-focused:hover {
+  -fx-background-color: rgba(52, 152, 219, 0.9);
+}
+
+.taskbar-item-minimized {
+  -fx-background-color: rgba(53, 59, 72, 0.5);
+  -fx-text-fill: rgba(255, 255, 255, 0.7);
+}
+
+.taskbar-item-minimized:hover {
+  -fx-background-color: rgba(64, 115, 158, 0.6);
 }
 
 .clock-label {

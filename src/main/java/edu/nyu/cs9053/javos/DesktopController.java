@@ -219,7 +219,7 @@ public class DesktopController {
         
         int col = 0;
         int row = 0;
-        final int COLS = 4; // Reduced to 4 columns for better spacing
+        final int COLS = 4;
         
         for (AppInfo app : availableApps) {
             VBox appBox = createAppIcon(app);
@@ -236,15 +236,12 @@ public class DesktopController {
         
         // Initially hide the launcher
         launcherMenu.setVisible(false);
-        launcherMenu.setMouseTransparent(false); // Make sure it can receive mouse events
+        launcherMenu.setMouseTransparent(false);
         
         // Prevent click events from reaching the desktop pane
         launcherMenu.setOnMouseClicked(event -> {
             event.consume();
         });
-        
-        // Add launcher to the desktop pane at the bottom of the stack
-        desktopPane.getChildren().add(0, launcherMenu);
     }
     
     private VBox createAppIcon(AppInfo app) {
@@ -322,13 +319,19 @@ public class DesktopController {
     }
     
     private void showLauncher() {
+        // Remove launcher if it's already in the scene
+        desktopPane.getChildren().remove(launcherMenu);
+        
         // Add blur effect to desktop background
         desktopPane.getChildren().stream()
             .filter(node -> node != launcherMenu)
             .forEach(node -> node.setEffect(new GaussianBlur(10)));
         
+        // Add launcher on top
+        desktopPane.getChildren().add(launcherMenu);
         launcherMenu.setVisible(true);
         launcherMenu.setMouseTransparent(false);
+        launcherMenu.toFront();
         isLauncherVisible = true;
     }
     
@@ -338,6 +341,9 @@ public class DesktopController {
         
         launcherMenu.setVisible(false);
         isLauncherVisible = false;
+        
+        // Remove launcher from scene
+        desktopPane.getChildren().remove(launcherMenu);
     }
     
     @FXML
@@ -363,11 +369,43 @@ public class DesktopController {
             if (window != null) {
                 runningApps.put(appName, window);
                 desktopPane.getChildren().add(window);
+                window.toFront(); // Ensure new window appears on top
                 
                 // Add to taskbar
                 Button taskButton = new Button(appName);
                 taskButton.getStyleClass().add("taskbar-item");
-                taskButton.setOnAction(e -> window.focus());
+                
+                // Handle taskbar button clicks
+                taskButton.setOnAction(e -> {
+                    if (!window.isVisible()) {
+                        window.setVisible(true);
+                        window.toFront();
+                        window.focus();
+                    } else if (window.isFocused()) {
+                        window.setVisible(false);
+                    } else {
+                        window.toFront();
+                        window.focus();
+                    }
+                });
+                
+                // Update taskbar button style when window state changes
+                window.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal) {
+                        taskButton.getStyleClass().add("taskbar-item-focused");
+                    } else {
+                        taskButton.getStyleClass().remove("taskbar-item-focused");
+                    }
+                });
+                
+                window.visibleProperty().addListener((obs, oldVal, newVal) -> {
+                    if (!newVal) {
+                        taskButton.getStyleClass().add("taskbar-item-minimized");
+                    } else {
+                        taskButton.getStyleClass().remove("taskbar-item-minimized");
+                    }
+                });
+                
                 taskbarItems.getChildren().add(taskButton);
                 
                 // Set up close handler
