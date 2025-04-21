@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Popup;
 import javafx.stage.Screen;
 import javafx.util.Duration;
@@ -19,6 +20,10 @@ import javafx.collections.transformation.FilteredList;
 import javafx.scene.input.KeyCode;
 import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
+import javafx.geometry.Pos;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
+import javafx.scene.effect.GaussianBlur;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -31,38 +36,54 @@ public class DesktopController {
     @FXML private HBox taskbarItems;
     @FXML private Label clockLabel;
     @FXML private TextField searchField;
+    @FXML private Button startButton;
     
     private final Map<String, JavOSWindow> runningApps = new HashMap<>();
     private Popup searchResults;
     private ListView<String> searchResultsList;
+    private VBox launcherMenu;
+    private boolean isLauncherVisible = false;
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     private final ObservableList<String> allApps = FXCollections.observableArrayList(
         "Terminal", "Notepad", "Calculator", "Weather"
     );
     
+    private final ObservableList<AppInfo> availableApps = FXCollections.observableArrayList(
+        new AppInfo("Terminal", "terminal-icon.png"),
+        new AppInfo("Notepad", "notepad-icon.png"),
+        new AppInfo("Calculator", "calculator-icon.png"),
+        new AppInfo("Weather", "weather-icon.png")
+    );
+
+    private static class AppInfo {
+        private final String name;
+        private final String iconPath;
+
+        public AppInfo(String name, String iconPath) {
+            this.name = name;
+            this.iconPath = iconPath;
+        }
+
+        public String getName() { return name; }
+        public String getIconPath() { return iconPath; }
+    }
+    
     @FXML
     public void initialize() {
         setupClock();
         setupSearch();
+        setupLauncherMenu();
         
-        // Add click handler to the desktop pane to close search popup
+        // Add click handler to the desktop pane to close menus
         desktopPane.setOnMouseClicked(event -> {
-            if (searchResults != null && searchResults.isShowing()) {
-                // Get the click coordinates relative to the search field
-                double clickX = event.getSceneX();
-                double clickY = event.getSceneY();
-                
-                // Get the bounds of the search field in scene coordinates
-                double searchFieldMinX = searchField.localToScene(searchField.getBoundsInLocal()).getMinX();
-                double searchFieldMaxX = searchField.localToScene(searchField.getBoundsInLocal()).getMaxX();
-                double searchFieldMinY = searchField.localToScene(searchField.getBoundsInLocal()).getMinY();
-                double searchFieldMaxY = searchField.localToScene(searchField.getBoundsInLocal()).getMaxY();
-                
-                // Check if click is outside search field and search results
-                if (!(clickX >= searchFieldMinX && clickX <= searchFieldMaxX &&
-                    clickY >= searchFieldMinY && clickY <= searchFieldMaxY)) {
+            // Only close if click is directly on the desktop pane
+            if (event.getTarget() == desktopPane) {
+                if (searchResults != null && searchResults.isShowing()) {
                     searchField.clear();
                     searchResults.hide();
+                }
+                if (isLauncherVisible) {
+                    hideLauncher();
                 }
             }
         });
@@ -184,20 +205,161 @@ public class DesktopController {
         });
     }
     
+    private void setupLauncherMenu() {
+        launcherMenu = new VBox();
+        launcherMenu.setAlignment(Pos.CENTER);
+        launcherMenu.setSpacing(20);
+        launcherMenu.setStyle("-fx-background-color: rgba(0, 0, 0, 0.8); -fx-padding: 40;");
+        
+        // Create grid for apps
+        GridPane appGrid = new GridPane();
+        appGrid.setHgap(40);
+        appGrid.setVgap(40);
+        appGrid.setAlignment(Pos.CENTER);
+        
+        int col = 0;
+        int row = 0;
+        final int COLS = 4; // Reduced to 4 columns for better spacing
+        
+        for (AppInfo app : availableApps) {
+            VBox appBox = createAppIcon(app);
+            appGrid.add(appBox, col, row);
+            
+            col++;
+            if (col >= COLS) {
+                col = 0;
+                row++;
+            }
+        }
+        
+        launcherMenu.getChildren().add(appGrid);
+        
+        // Initially hide the launcher
+        launcherMenu.setVisible(false);
+        launcherMenu.setMouseTransparent(false); // Make sure it can receive mouse events
+        
+        // Prevent click events from reaching the desktop pane
+        launcherMenu.setOnMouseClicked(event -> {
+            event.consume();
+        });
+        
+        // Add launcher to the desktop pane at the bottom of the stack
+        desktopPane.getChildren().add(0, launcherMenu);
+    }
+    
+    private VBox createAppIcon(AppInfo app) {
+        VBox appBox = new VBox(10);
+        appBox.setAlignment(Pos.CENTER);
+        appBox.setPrefWidth(120);
+        appBox.setPrefHeight(120);
+        
+        // Create app icon
+        StackPane iconContainer = new StackPane();
+        Rectangle iconBg = new Rectangle(80, 80);
+        iconBg.setArcWidth(20);
+        iconBg.setArcHeight(20);
+        
+        // Set different colors for different apps
+        switch (app.getName()) {
+            case "Terminal":
+                iconBg.setStyle("-fx-fill: #34495e;");
+                break;
+            case "Notepad":
+                iconBg.setStyle("-fx-fill: #2ecc71;");
+                break;
+            case "Calculator":
+                iconBg.setStyle("-fx-fill: #e74c3c;");
+                break;
+            case "Weather":
+                iconBg.setStyle("-fx-fill: #3498db;");
+                break;
+            default:
+                iconBg.setStyle("-fx-fill: #95a5a6;");
+        }
+        
+        // Add icon text (first letter of app name)
+        Label iconLabel = new Label(app.getName().substring(0, 1).toUpperCase());
+        iconLabel.setStyle("-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;");
+        
+        iconContainer.getChildren().addAll(iconBg, iconLabel);
+        
+        // App name label
+        Label nameLabel = new Label(app.getName());
+        nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        
+        appBox.getChildren().addAll(iconContainer, nameLabel);
+        
+        // Add hover effect with transition
+        appBox.setOnMouseEntered(e -> {
+            iconContainer.setScaleX(1.1);
+            iconContainer.setScaleY(1.1);
+            nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-effect: dropshadow(gaussian, #3498db, 10, 0, 0, 0);");
+        });
+        
+        appBox.setOnMouseExited(e -> {
+            iconContainer.setScaleX(1.0);
+            iconContainer.setScaleY(1.0);
+            nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        });
+        
+        // Add click handler with visual feedback
+        appBox.setOnMouseClicked(event -> {
+            event.consume(); // Prevent event from reaching desktop pane
+            iconContainer.setScaleX(0.9);
+            iconContainer.setScaleY(0.9);
+            
+            // Use a small delay to show the click animation
+            Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), e -> {
+                iconContainer.setScaleX(1.0);
+                iconContainer.setScaleY(1.0);
+                launchApp(app.getName());
+                hideLauncher();
+            }));
+            timeline.play();
+        });
+        
+        return appBox;
+    }
+    
+    private void showLauncher() {
+        // Add blur effect to desktop background
+        desktopPane.getChildren().stream()
+            .filter(node -> node != launcherMenu)
+            .forEach(node -> node.setEffect(new GaussianBlur(10)));
+        
+        launcherMenu.setVisible(true);
+        launcherMenu.setMouseTransparent(false);
+        isLauncherVisible = true;
+    }
+    
+    private void hideLauncher() {
+        // Remove blur effect
+        desktopPane.getChildren().forEach(node -> node.setEffect(null));
+        
+        launcherMenu.setVisible(false);
+        isLauncherVisible = false;
+    }
+    
     @FXML
     private void showStartMenu() {
-        // We'll keep this simple since search is now in taskbar
-        // You can customize this for other start menu features
+        if (isLauncherVisible) {
+            hideLauncher();
+        } else {
+            showLauncher();
+        }
     }
     
     public void launchApp(String appName) {
-        if (runningApps.containsKey(appName)) {
-            runningApps.get(appName).focus();
-            return;
-        }
-        
         try {
-            JavOSWindow window = createApp(appName);
+            if (runningApps.containsKey(appName)) {
+                // Focus existing window
+                JavOSWindow existingWindow = runningApps.get(appName);
+                existingWindow.focus();
+                return;
+            }
+            
+            // Create new instance
+            final JavOSWindow window = createApp(appName);
             if (window != null) {
                 runningApps.put(appName, window);
                 desktopPane.getChildren().add(window);
@@ -208,6 +370,7 @@ public class DesktopController {
                 taskButton.setOnAction(e -> window.focus());
                 taskbarItems.getChildren().add(taskButton);
                 
+                // Set up close handler
                 window.setOnClose(() -> {
                     desktopPane.getChildren().remove(window);
                     taskbarItems.getChildren().remove(taskButton);
@@ -215,18 +378,25 @@ public class DesktopController {
                 });
             }
         } catch (Exception e) {
-            showError("Failed to launch " + appName);
+            e.printStackTrace();
+            showError("Failed to launch " + appName + ": " + e.getMessage());
         }
     }
     
     private JavOSWindow createApp(String appName) {
-        return switch (appName) {
-            case "Terminal" -> new Terminal(this);
-            case "Notepad" -> new Notepad(this);
-            case "Weather" -> new Weather(this);
-            // Add other apps here as they are implemented
-            default -> null;
-        };
+        try {
+            return switch (appName) {
+                case "Terminal" -> new Terminal(this);
+                case "Notepad" -> new Notepad(this);
+                case "Weather" -> new Weather(this);
+                case "Calculator" -> null; // TODO: Implement Calculator
+                default -> null;
+            };
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Failed to create " + appName + ": " + e.getMessage());
+            return null;
+        }
     }
     
     private void showError(String message) {

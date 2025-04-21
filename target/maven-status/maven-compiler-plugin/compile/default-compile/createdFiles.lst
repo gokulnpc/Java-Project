@@ -1,5 +1,6 @@
 edu/nyu/cs9053/javos/JavOS.class
 edu/nyu/cs9053/javos/apps/Terminal.class
+edu/nyu/cs9053/javos/DesktopController$AppInfo.class
 edu/nyu/cs9053/javos/apps/ProcessManager$ProcessStatus.class
 edu/nyu/cs9053/javos/apps/CommandInterpreter$Command.class
 edu/nyu/cs9053/javos/LoginController.class
