@@ -20,6 +20,9 @@
             <!-- Start Menu Button -->
             <Button fx:id="startButton" text="JavOS" styleClass="start-button" onAction="#showStartMenu"/>
             
+            <!-- Search Box -->
+            <TextField fx:id="searchField" promptText="Type here to search" styleClass="taskbar-search"/>
+            
             <!-- Running Applications -->
             <HBox fx:id="taskbarItems" styleClass="taskbar-items" HBox.hgrow="ALWAYS"/>
             

@@ -2,6 +2,7 @@ package edu.nyu.cs9053.javos;
 
 import edu.nyu.cs9053.javos.apps.Terminal;
 import edu.nyu.cs9053.javos.apps.Notepad;
+import edu.nyu.cs9053.javos.apps.Weather;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -10,26 +11,61 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Popup;
+import javafx.stage.Screen;
 import javafx.util.Duration;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.scene.input.KeyCode;
+import javafx.geometry.Bounds;
+import javafx.geometry.Rectangle2D;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
 
 public class DesktopController {
     @FXML private StackPane desktopPane;
     @FXML private HBox taskbarItems;
     @FXML private Label clockLabel;
+    @FXML private TextField searchField;
     
     private final Map<String, JavOSWindow> runningApps = new HashMap<>();
-    private Popup startMenu;
+    private Popup searchResults;
+    private ListView<String> searchResultsList;
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private final ObservableList<String> allApps = FXCollections.observableArrayList(
+        "Terminal", "Notepad", "Calculator", "Weather"
+    );
     
     @FXML
     public void initialize() {
         setupClock();
-        setupStartMenu();
+        setupSearch();
+        
+        // Add click handler to the desktop pane to close search popup
+        desktopPane.setOnMouseClicked(event -> {
+            if (searchResults != null && searchResults.isShowing()) {
+                // Get the click coordinates relative to the search field
+                double clickX = event.getSceneX();
+                double clickY = event.getSceneY();
+                
+                // Get the bounds of the search field in scene coordinates
+                double searchFieldMinX = searchField.localToScene(searchField.getBoundsInLocal()).getMinX();
+                double searchFieldMaxX = searchField.localToScene(searchField.getBoundsInLocal()).getMaxX();
+                double searchFieldMinY = searchField.localToScene(searchField.getBoundsInLocal()).getMinY();
+                double searchFieldMaxY = searchField.localToScene(searchField.getBoundsInLocal()).getMaxY();
+                
+                // Check if click is outside search field and search results
+                if (!(clickX >= searchFieldMinX && clickX <= searchFieldMaxX &&
+                    clickY >= searchFieldMinY && clickY <= searchFieldMaxY)) {
+                    searchField.clear();
+                    searchResults.hide();
+                }
+            }
+        });
     }
     
     private void setupClock() {
@@ -41,30 +77,117 @@ public class DesktopController {
         timeline.play();
     }
     
-    private void setupStartMenu() {
-        startMenu = new Popup();
-        VBox menuContent = new VBox(5);
-        menuContent.getStyleClass().add("start-menu");
+    private void setupSearch() {
+        // Initialize search results popup
+        searchResults = new Popup();
+        searchResults.setAutoHide(false);
+        searchResultsList = new ListView<>();
+        searchResultsList.setPrefHeight(300); // Reduced height for better positioning
+        searchResultsList.getStyleClass().add("search-results-list");
         
-        // Add application launchers
-        String[] apps = {"Terminal", "Notepad", "Calculator"};
-        for (String app : apps) {
-            Button appButton = new Button(app);
-            appButton.setOnAction(e -> launchApp(app));
-            appButton.getStyleClass().add("start-menu-item");
-            menuContent.getChildren().add(appButton);
-        }
+        // Create a container for the popup content
+        VBox popupContent = new VBox(searchResultsList);
+        popupContent.getStyleClass().add("search-results-container");
+        searchResults.getContent().add(popupContent);
         
-        startMenu.getContent().add(menuContent);
+        // Bind the width of the popup content to the search field width
+        searchResultsList.prefWidthProperty().bind(searchField.widthProperty());
+        popupContent.prefWidthProperty().bind(searchField.widthProperty());
+        
+        // Setup filtered list
+        FilteredList<String> filteredApps = new FilteredList<>(allApps, p -> true);
+        searchResultsList.setItems(filteredApps);
+        
+        // Add search listener
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredApps.setPredicate(app -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    searchResults.hide();
+                    return false;
+                }
+                return app.toLowerCase().contains(newValue.toLowerCase());
+            });
+            
+            if (!newValue.isEmpty() && !filteredApps.isEmpty()) {
+                if (!searchResults.isShowing()) {
+                    // Calculate position relative to search field
+                    Bounds searchFieldBounds = searchField.localToScreen(searchField.getBoundsInLocal());
+                    
+                    // Get screen bounds
+                    Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                    
+                    // Calculate X position (aligned with search field)
+                    double x = searchFieldBounds.getMinX();
+                    
+                    // Calculate Y position (below search field with small gap)
+                    double y = searchFieldBounds.getMaxY() + 2;
+                    
+                    // Check if popup would go off bottom of screen
+                    if (y + searchResultsList.getPrefHeight() > screenBounds.getMaxY()) {
+                        // If it would go off screen, show above search field instead
+                        y = searchFieldBounds.getMinY() - searchResultsList.getPrefHeight() - 2;
+                    }
+                    
+                    // Position popup
+                    searchResults.setX(x-12);
+                    searchResults.setY(y-33);
+                    
+                    searchResults.show(searchField.getScene().getWindow());
+                }
+            } else {
+                searchResults.hide();
+            }
+        });
+
+        // Prevent clicks in the search results from bubbling up
+        searchResultsList.setOnMouseClicked(event -> {
+            String selectedApp = searchResultsList.getSelectionModel().getSelectedItem();
+            if (selectedApp != null) {
+                launchApp(selectedApp);
+                searchField.clear();
+                searchResults.hide();
+            }
+            event.consume();
+        });
+        
+        // Handle keyboard navigation
+        searchField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DOWN && searchResults.isShowing()) {
+                searchResultsList.requestFocus();
+                searchResultsList.getSelectionModel().selectFirst();
+            } else if (event.getCode() == KeyCode.ENTER && searchResults.isShowing()) {
+                String selectedApp = searchResultsList.getSelectionModel().getSelectedItem();
+                if (selectedApp != null) {
+                    launchApp(selectedApp);
+                    searchField.clear();
+                    searchResults.hide();
+                }
+            } else if (event.getCode() == KeyCode.ESCAPE) {
+                searchField.clear();
+                searchResults.hide();
+            }
+        });
+        
+        searchResultsList.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                String selectedApp = searchResultsList.getSelectionModel().getSelectedItem();
+                if (selectedApp != null) {
+                    launchApp(selectedApp);
+                    searchField.clear();
+                    searchResults.hide();
+                }
+            } else if (event.getCode() == KeyCode.ESCAPE) {
+                searchField.clear();
+                searchResults.hide();
+            }
+            event.consume();
+        });
     }
     
     @FXML
     private void showStartMenu() {
-        if (!startMenu.isShowing()) {
-            startMenu.show(desktopPane.getScene().getWindow());
-        } else {
-            startMenu.hide();
-        }
+        // We'll keep this simple since search is now in taskbar
+        // You can customize this for other start menu features
     }
     
     public void launchApp(String appName) {
@@ -100,6 +223,7 @@ public class DesktopController {
         return switch (appName) {
             case "Terminal" -> new Terminal(this);
             case "Notepad" -> new Notepad(this);
+            case "Weather" -> new Weather(this);
             // Add other apps here as they are implemented
             default -> null;
         };

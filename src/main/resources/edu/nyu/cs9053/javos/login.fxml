@@ -4,19 +4,44 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import javafx.scene.shape.Circle?>
 
-<VBox alignment="CENTER" spacing="20" styleClass="login-container" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.nyu.cs9053.javos.LoginController">
-    <padding>
-        <Insets top="40" right="40" bottom="40" left="40"/>
-    </padding>
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+         fx:controller="edu.nyu.cs9053.javos.LoginController"
+         styleClass="login-background">
     
-    <Text text="JavOS" styleClass="login-title"/>
+    <!-- Background circles for visual effect -->
+    <Circle styleClass="background-circle" radius="100" translateX="-200" translateY="-150"/>
+    <Circle styleClass="background-circle" radius="80" translateX="180" translateY="120"/>
+    <Circle styleClass="background-circle" radius="60" translateX="150" translateY="-180"/>
     
-    <VBox spacing="10" alignment="CENTER">
-        <TextField fx:id="usernameField" promptText="Username" styleClass="login-field"/>
-        <PasswordField fx:id="passwordField" promptText="Password" styleClass="login-field"/>
-        <Button text="Login" onAction="#handleLogin" styleClass="login-button"/>
+    <VBox alignment="CENTER" spacing="20" styleClass="login-container" maxWidth="400" maxHeight="500">
+        <padding>
+            <Insets top="40" right="40" bottom="40" left="40"/>
+        </padding>
+        
+        <!-- Logo and Title -->
+        <VBox alignment="CENTER" spacing="10">
+            <Circle styleClass="logo-circle" radius="40"/>
+            <Text text="JavOS" styleClass="login-title"/>
+            <Text text="Welcome back" styleClass="login-subtitle"/>
+        </VBox>
+        
+        <!-- Login Form -->
+        <VBox spacing="15" alignment="CENTER">
+            <VBox spacing="5">
+                <Label text="Username" styleClass="field-label"/>
+                <TextField fx:id="usernameField" promptText="Enter your username" styleClass="login-field"/>
+            </VBox>
+            
+            <VBox spacing="5">
+                <Label text="Password" styleClass="field-label"/>
+                <PasswordField fx:id="passwordField" promptText="Enter your password" styleClass="login-field"/>
+            </VBox>
+            
+            <Button text="Sign In" onAction="#handleLogin" styleClass="login-button" maxWidth="Infinity"/>
+        </VBox>
+        
+        <Label fx:id="errorLabel" styleClass="error-label" wrapText="true"/>
     </VBox>
-    
-    <Label fx:id="errorLabel" styleClass="error-label"/>
-</VBox> 
+</StackPane> 

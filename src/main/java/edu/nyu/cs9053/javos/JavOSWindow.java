@@ -87,11 +87,21 @@ public class JavOSWindow extends VBox {
         
         getChildren().addAll(titleBar, content);
         
-        // Set initial position
-        setLayoutX(50);
-        setLayoutY(50);
-        setPrefWidth(600);
-        setPrefHeight(400);
+        // Get screen bounds
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        
+        // Save initial position for restore
+        savedX = 50;
+        savedY = 50;
+        savedWidth = 600;
+        savedHeight = 400;
+        
+        // Start maximized
+        setLayoutX(0);
+        setLayoutY(0);
+        setPrefWidth(screenBounds.getWidth());
+        setPrefHeight(screenBounds.getHeight() - 40); // Leave space for taskbar
+        isMaximized = true;
     }
     
     private void toggleMaximize() {
@@ -123,7 +133,7 @@ public class JavOSWindow extends VBox {
         }
     }
     
-    private Region createContent() {
+    protected Region createContent() {
         // This will be overridden by specific application windows
         return new Region();
     }
