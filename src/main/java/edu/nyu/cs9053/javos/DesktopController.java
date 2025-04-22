@@ -75,6 +75,7 @@ public class DesktopController {
         setupClock();
         setupSearch();
         setupLauncherMenu();
+        setupHomeButton();
         
         // Add click handler to the desktop pane to close menus
         desktopPane.setOnMouseClicked(event -> {
@@ -448,5 +449,52 @@ public class DesktopController {
         alert.setTitle("Error");
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void setupHomeButton() {
+        Button homeButton = new Button("\u2302"); // House symbol
+        homeButton.getStyleClass().add("taskbar-home");
+        homeButton.setStyle("""
+            -fx-background-color: transparent;
+            -fx-text-fill: white;
+            -fx-font-size: 20px;
+            -fx-padding: 5 15;
+            -fx-cursor: hand;
+            """);
+        
+        // Add hover effect
+        homeButton.setOnMouseEntered(e -> 
+            homeButton.setStyle("""
+                -fx-background-color: rgba(52, 152, 219, 0.3);
+                -fx-text-fill: white;
+                -fx-font-size: 20px;
+                -fx-padding: 5 15;
+                -fx-cursor: hand;
+                """)
+        );
+        
+        homeButton.setOnMouseExited(e -> 
+            homeButton.setStyle("""
+                -fx-background-color: transparent;
+                -fx-text-fill: white;
+                -fx-font-size: 20px;
+                -fx-padding: 5 15;
+                -fx-cursor: hand;
+                """)
+        );
+        
+        // Add click handler to minimize all windows
+        homeButton.setOnAction(e -> minimizeAllWindows());
+        
+        // Add the home button at the beginning of the taskbar items
+        taskbarItems.getChildren().add(0, homeButton);
+    }
+    
+    private void minimizeAllWindows() {
+        runningApps.values().forEach(window -> {
+            if (window.isVisible()) {
+                window.minimize();
+            }
+        });
     }
 } 
