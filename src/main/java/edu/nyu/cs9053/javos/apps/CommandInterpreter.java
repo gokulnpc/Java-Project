@@ -59,6 +59,8 @@ public class CommandInterpreter {
         terminal.appendToConsole("  Terminal\n");
         terminal.appendToConsole("  Notepad\n");
         terminal.appendToConsole("  Calculator\n");
+        terminal.appendToConsole("  Weather\n");
+        terminal.appendToConsole("  Calendar\n");
     }
 
     private void processCommand(String args) {

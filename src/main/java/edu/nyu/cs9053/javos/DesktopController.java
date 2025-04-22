@@ -3,6 +3,7 @@ package edu.nyu.cs9053.javos;
 import edu.nyu.cs9053.javos.apps.Terminal;
 import edu.nyu.cs9053.javos.apps.Notepad;
 import edu.nyu.cs9053.javos.apps.Weather;
+import edu.nyu.cs9053.javos.apps.Calendar;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -45,14 +46,15 @@ public class DesktopController {
     private boolean isLauncherVisible = false;
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     private final ObservableList<String> allApps = FXCollections.observableArrayList(
-        "Terminal", "Notepad", "Calculator", "Weather"
+        "Terminal", "Notepad", "Calculator", "Weather", "Calendar"
     );
     
     private final ObservableList<AppInfo> availableApps = FXCollections.observableArrayList(
         new AppInfo("Terminal", "terminal-icon.png"),
         new AppInfo("Notepad", "notepad-icon.png"),
         new AppInfo("Calculator", "calculator-icon.png"),
-        new AppInfo("Weather", "weather-icon.png")
+        new AppInfo("Weather", "weather-icon.png"),
+        new AppInfo("Calendar", "calendar-icon.png")
     );
 
     private static class AppInfo {
@@ -270,6 +272,9 @@ public class DesktopController {
             case "Weather":
                 iconBg.setStyle("-fx-fill: #3498db;");
                 break;
+            case "Calendar":
+                iconBg.setStyle("-fx-fill: #95a5a6;");
+                break;
             default:
                 iconBg.setStyle("-fx-fill: #95a5a6;");
         }
@@ -427,6 +432,7 @@ public class DesktopController {
                 case "Terminal" -> new Terminal(this);
                 case "Notepad" -> new Notepad(this);
                 case "Weather" -> new Weather(this);
+                case "Calendar" -> new Calendar(this);
                 case "Calculator" -> null; // TODO: Implement Calculator
                 default -> null;
             };
