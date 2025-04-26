@@ -429,15 +429,19 @@ public class DesktopController {
     
     private JavOSWindow createApp(String appName) {
         try {
-            return switch (appName) {
+            System.out.println("Attempting to create app: " + appName);
+            JavOSWindow window = switch (appName) {
                 case "Terminal" -> new Terminal(this);
                 case "Notepad" -> new Notepad(this);
                 case "Weather" -> new Weather(this);
                 case "Calendar" -> new Calendar(this);
-                case "Calculator" -> null; // TODO: Implement Calculator
+                case "Calculator" -> new edu.nyu.cs9053.javos.apps.Calculator(this);
                 default -> null;
             };
+            System.out.println("App created: " + appName + " => " + (window != null));
+            return window;
         } catch (Exception e) {
+            System.out.println("Exception while creating app: " + appName);
             e.printStackTrace();
             showError("Failed to create " + appName + ": " + e.getMessage());
             return null;
