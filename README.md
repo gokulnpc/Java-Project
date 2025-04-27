@@ -45,6 +45,11 @@ JavOS is a desktop-style application built using JavaFX that simulates the look 
 
 ## Setup & Usage
 
+**Default Login Credentials:**
+
+- Username: `admin`
+- Password: `password`
+
 1. **Clone the repository:**
    ```sh
    git clone <repo-url>
