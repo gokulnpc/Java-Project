@@ -31,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Arrays;
+import edu.nyu.cs9053.javos.apps.ProcessManager;
 
 public class DesktopController {
     @FXML private StackPane desktopPane;
@@ -363,64 +364,69 @@ public class DesktopController {
     
     public void launchApp(String appName) {
         try {
-            if (runningApps.containsKey(appName)) {
-                // Focus existing window
-                JavOSWindow existingWindow = runningApps.get(appName);
-                existingWindow.focus();
-                return;
-            }
-            
-            // Create new instance
-            final JavOSWindow window = createApp(appName);
-            if (window != null) {
-                runningApps.put(appName, window);
-                desktopPane.getChildren().add(window);
-                window.toFront(); // Ensure new window appears on top
-                
-                // Add to taskbar
-                Button taskButton = new Button(appName);
-                taskButton.getStyleClass().add("taskbar-item");
-                
-                // Handle taskbar button clicks
-                taskButton.setOnAction(e -> {
-                    if (!window.isVisible()) {
-                        window.setVisible(true);
+            // Launch each app in its own thread
+            Runnable appTask = () -> {
+                JavOSWindow[] windowRef = new JavOSWindow[1];
+                javafx.application.Platform.runLater(() -> {
+                    JavOSWindow window = createApp(appName);
+                    windowRef[0] = window;
+                    if (window != null) {
+                        desktopPane.getChildren().add(window);
                         window.toFront();
-                        window.focus();
-                    } else if (window.isFocused()) {
-                        window.setVisible(false);
-                    } else {
-                        window.toFront();
-                        window.focus();
+                        // Add to taskbar
+                        Button taskButton = new Button(appName);
+                        taskButton.getStyleClass().add("taskbar-item");
+                        taskButton.setOnAction(e -> {
+                            if (!window.isVisible()) {
+                                window.setVisible(true);
+                                window.toFront();
+                                window.focus();
+                            } else if (window.isFocused()) {
+                                window.setVisible(false);
+                            } else {
+                                window.toFront();
+                                window.focus();
+                            }
+                        });
+                        window.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                            if (newVal) {
+                                taskButton.getStyleClass().add("taskbar-item-focused");
+                            } else {
+                                taskButton.getStyleClass().remove("taskbar-item-focused");
+                            }
+                        });
+                        window.visibleProperty().addListener((obs, oldVal, newVal) -> {
+                            if (!newVal) {
+                                taskButton.getStyleClass().add("taskbar-item-minimized");
+                            } else {
+                                taskButton.getStyleClass().remove("taskbar-item-minimized");
+                            }
+                        });
+                        taskbarItems.getChildren().add(taskButton);
+                        window.setOnClose(() -> {
+                            desktopPane.getChildren().remove(window);
+                            taskbarItems.getChildren().remove(taskButton);
+                        });
                     }
                 });
-                
-                // Update taskbar button style when window state changes
-                window.focusedProperty().addListener((obs, oldVal, newVal) -> {
-                    if (newVal) {
-                        taskButton.getStyleClass().add("taskbar-item-focused");
-                    } else {
-                        taskButton.getStyleClass().remove("taskbar-item-focused");
-                    }
-                });
-                
-                window.visibleProperty().addListener((obs, oldVal, newVal) -> {
-                    if (!newVal) {
-                        taskButton.getStyleClass().add("taskbar-item-minimized");
-                    } else {
-                        taskButton.getStyleClass().remove("taskbar-item-minimized");
-                    }
-                });
-                
-                taskbarItems.getChildren().add(taskButton);
-                
-                // Set up close handler
-                window.setOnClose(() -> {
-                    desktopPane.getChildren().remove(window);
-                    taskbarItems.getChildren().remove(taskButton);
-                    runningApps.remove(appName);
-                });
-            }
+                // Wait for window to be created
+                while (windowRef[0] == null) {
+                    try { Thread.sleep(10); } catch (InterruptedException e) { return; }
+                }
+                // Register with ProcessManager
+                int pid = ProcessManager.getInstance().startProcess(appName, Thread.currentThread(), windowRef[0]);
+                // Keep thread alive until window is closed or interrupted
+                while (windowRef[0].isOpen() && !Thread.currentThread().isInterrupted()) {
+                    try { Thread.sleep(100); } catch (InterruptedException e) { break; }
+                }
+                // Cleanup: close window if not already closed
+                if (windowRef[0].isOpen()) {
+                    javafx.application.Platform.runLater(windowRef[0]::close);
+                }
+            };
+            Thread appThread = new Thread(appTask, appName + "-Thread");
+            appThread.setDaemon(false);
+            appThread.start();
         } catch (Exception e) {
             e.printStackTrace();
             showError("Failed to launch " + appName + ": " + e.getMessage());

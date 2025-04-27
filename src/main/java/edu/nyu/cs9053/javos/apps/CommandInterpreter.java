@@ -3,15 +3,14 @@ package edu.nyu.cs9053.javos.apps;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import edu.nyu.cs9053.javos.apps.ProcessManager;
 
 public class CommandInterpreter {
     private final Terminal terminal;
     private final Map<String, Command> commands;
-    private final ProcessManager processManager;
 
     public CommandInterpreter(Terminal terminal) {
         this.terminal = terminal;
-        this.processManager = new ProcessManager();
         this.commands = initializeCommands();
     }
 
@@ -66,7 +65,7 @@ public class CommandInterpreter {
     private void processCommand(String args) {
         terminal.appendToConsole("PID\tNAME\t\tSTATUS\n");
         terminal.appendToConsole("------------------------\n");
-        processManager.getRunningProcesses().forEach(process -> 
+        ProcessManager.getInstance().getRunningProcesses().forEach(process -> 
             terminal.appendToConsole(String.format("%d\t%s\t\t%s\n",
                 process.getPid(),
                 process.getName(),
@@ -84,7 +83,7 @@ public class CommandInterpreter {
     private void killCommand(String args) {
         try {
             int pid = Integer.parseInt(args.trim());
-            if (processManager.killProcess(pid)) {
+            if (ProcessManager.getInstance().killProcess(pid)) {
                 terminal.appendToConsole("Process " + pid + " terminated\n");
             } else {
                 terminal.appendToConsole("No such process: " + pid + "\n");

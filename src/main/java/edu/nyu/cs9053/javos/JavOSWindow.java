@@ -160,4 +160,8 @@ public class JavOSWindow extends VBox {
     protected void setTitle(String newTitle) {
         titleLabel.setText(newTitle);
     }
+
+    public boolean isOpen() {
+        return getScene() != null && isVisible();
+    }
 } 

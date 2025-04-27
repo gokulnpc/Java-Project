@@ -43,13 +43,13 @@ public class Terminal extends JavOSWindow {
         area.setWrapText(true);
         area.setEditable(false);
         
-        // Handle key events
         area.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPress);
         
         return area;
     }
     
     private void handleKeyPress(KeyEvent event) {
+        if (event.getEventType() != KeyEvent.KEY_PRESSED) return;
         switch (event.getCode()) {
             case ENTER:
                 executeCommand();
@@ -60,8 +60,9 @@ public class Terminal extends JavOSWindow {
                 event.consume();
                 break;
             default:
-                if (event.getText().matches("\\S")) {
-                    appendToCommand(event.getText());
+                String text = event.getText();
+                if (text != null && !text.isEmpty() && text.charAt(0) >= 32) {
+                    appendToCommand(text);
                     event.consume();
                 }
                 break;
@@ -71,8 +72,14 @@ public class Terminal extends JavOSWindow {
     private void handleBackspace() {
         if (currentCommand.length() > 0) {
             currentCommand.setLength(currentCommand.length() - 1);
-            String fullText = consoleArea.getText();
-            consoleArea.setText(fullText.substring(0, fullText.length() - 1));
+            Platform.runLater(() -> {
+                String fullText = consoleArea.getText();
+                if (!fullText.isEmpty()) {
+                    consoleArea.setText(fullText.substring(0, fullText.length() - 1));
+                    consoleArea.positionCaret(consoleArea.getText().length());
+                    consoleArea.setScrollTop(Double.MAX_VALUE);
+                }
+            });
         }
     }
     
@@ -96,6 +103,7 @@ public class Terminal extends JavOSWindow {
     public void appendToConsole(String text) {
         Platform.runLater(() -> {
             consoleArea.appendText(text);
+            consoleArea.positionCaret(consoleArea.getText().length());
             consoleArea.setScrollTop(Double.MAX_VALUE);
         });
     }
