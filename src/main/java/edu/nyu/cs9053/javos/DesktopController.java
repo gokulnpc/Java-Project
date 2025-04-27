@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Arrays;
 import edu.nyu.cs9053.javos.apps.ProcessManager;
+import edu.nyu.cs9053.javos.widgets.NewsTicker;
 
 public class DesktopController {
     @FXML private StackPane desktopPane;
@@ -77,6 +78,10 @@ public class DesktopController {
         setupSearch();
         setupLauncherMenu();
         setupHomeButton();
+        
+        // Add the news ticker to the taskbar
+        NewsTicker newsTicker = new NewsTicker();
+        taskbarItems.getChildren().add(newsTicker);
         
         // Add click handler to the desktop pane to close menus
         desktopPane.setOnMouseClicked(event -> {
