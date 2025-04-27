@@ -43,6 +43,14 @@ JavOS is a desktop-style application built using JavaFX that simulates the look 
 - Demonstrates multitasking by launching multiple apps simultaneously
 - Manual testing of command responses and app lifecycle handling
 
+### 6. Real File System Integration
+
+- **Notepad** and **File Explorer** interact with the real file system:
+  - Files are saved and opened from the `~/JavOSFiles` directory in the user's home folder.
+  - Notepad auto-saves the current file every 30 seconds if there are unsaved changes.
+  - Notepad maintains a list of recent files for quick access.
+  - File Explorer displays all files in the `~/JavOSFiles` directory and allows users to open or delete files.
+
 ## Setup & Usage
 
 **Default Login Credentials:**
@@ -83,6 +91,10 @@ JavOS is a desktop-style application built using JavaFX that simulates the look 
    - Use advanced functions (sin, cos, log, power, factorial, etc.)
 6. **Manual Testing:**
    - Try edge cases (e.g., kill the same PID twice, open/close many apps)
+7. **File Management:**
+   - Open Notepad and File Explorer.
+   - Create, edit, and save files in Notepad. All files are saved in the `~/JavOSFiles` directory.
+   - Use File Explorer to view, open, and delete files in the `~/JavOSFiles` directory.
 
 ## Authors
 
