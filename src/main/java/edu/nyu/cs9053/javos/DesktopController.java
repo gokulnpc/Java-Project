@@ -56,7 +56,8 @@ public class DesktopController {
         new AppInfo("Notepad", "notepad-icon.png"),
         new AppInfo("Calculator", "calculator-icon.png"),
         new AppInfo("Weather", "weather-icon.png"),
-        new AppInfo("Calendar", "calendar-icon.png")
+        new AppInfo("Calendar", "calendar-icon.png"),
+        new AppInfo("File Explorer", "file-explorer-icon.png")
     );
 
     private static class AppInfo {
@@ -282,6 +283,9 @@ public class DesktopController {
             case "Calendar":
                 iconBg.setStyle("-fx-fill: #95a5a6;");
                 break;
+            case "File Explorer":
+                iconBg.setStyle("-fx-fill: #95a5a6;");
+                break;
             default:
                 iconBg.setStyle("-fx-fill: #95a5a6;");
         }
@@ -447,6 +451,7 @@ public class DesktopController {
                 case "Weather" -> new Weather(this);
                 case "Calendar" -> new Calendar(this);
                 case "Calculator" -> new edu.nyu.cs9053.javos.apps.Calculator(this);
+                case "File Explorer" -> new edu.nyu.cs9053.javos.apps.FileExplorer(this);
                 default -> null;
             };
             System.out.println("App created: " + appName + " => " + (window != null));

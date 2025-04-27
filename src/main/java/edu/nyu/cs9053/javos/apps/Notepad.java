@@ -10,15 +10,26 @@ import javafx.scene.input.KeyCombination;
 import javafx.stage.FileChooser;
 import java.io.*;
 import java.nio.file.*;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
+import java.util.LinkedList;
+import javafx.scene.control.TextInputDialog;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Notepad extends JavOSWindow {
     private TextArea textArea;
     private String currentFile = null;
     private boolean isModified = false;
+    private final LinkedList<String> recentFiles = new LinkedList<>();
+    private Timeline autoSaveTimeline;
+    private Menu recentFilesMenu;
 
     public Notepad(DesktopController desktop) {
         super("Notepad", desktop);
         setupNotepad();
+        setupAutoSave();
     }
 
     private void setupNotepad() {
@@ -76,7 +87,11 @@ public class Notepad extends JavOSWindow {
         saveAs.setAccelerator(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN));
         saveAs.setOnAction(e -> saveFile(true));
 
-        fileMenu.getItems().addAll(newFile, open, save, saveAs);
+        // Recent Files submenu
+        recentFilesMenu = new Menu("Recent Files");
+        updateRecentFilesMenu();
+
+        fileMenu.getItems().addAll(newFile, open, save, saveAs, new SeparatorMenuItem(), recentFilesMenu);
 
         // Edit Menu
         Menu editMenu = new Menu("Edit");
@@ -102,6 +117,63 @@ public class Notepad extends JavOSWindow {
         return menuBar;
     }
 
+    private void updateRecentFilesMenu() {
+        recentFilesMenu.getItems().clear();
+        if (recentFiles.isEmpty()) {
+            MenuItem none = new MenuItem("(No recent files)");
+            none.setDisable(true);
+            recentFilesMenu.getItems().add(none);
+        } else {
+            for (String path : recentFiles) {
+                MenuItem item = new MenuItem(path);
+                item.setOnAction(e -> openRecentFile(path));
+                recentFilesMenu.getItems().add(item);
+            }
+        }
+    }
+
+    private void addRecentFile(String path) {
+        recentFiles.remove(path);
+        recentFiles.addFirst(path);
+        while (recentFiles.size() > 5) recentFiles.removeLast();
+        updateRecentFilesMenu();
+    }
+
+    private void openRecentFile(String path) {
+        if (checkSave()) {
+            File file = new File(path);
+            if (file.exists()) {
+                try {
+                    String content = new String(Files.readAllBytes(file.toPath()));
+                    textArea.setText(content);
+                    currentFile = path;
+                    isModified = false;
+                    updateTitle();
+                } catch (IOException e) {
+                    showError("Failed to open file: " + e.getMessage());
+                }
+            } else {
+                showError("File not found: " + path);
+            }
+        }
+    }
+
+    private void setupAutoSave() {
+        autoSaveTimeline = new Timeline(new KeyFrame(Duration.seconds(30), e -> {
+            if (isModified && currentFile != null) {
+                try {
+                    Files.write(Paths.get(currentFile), textArea.getText().getBytes());
+                    isModified = false;
+                    updateTitle();
+                } catch (Exception ex) {
+                    showError("Auto-save failed: " + ex.getMessage());
+                }
+            }
+        }));
+        autoSaveTimeline.setCycleCount(Timeline.INDEFINITE);
+        autoSaveTimeline.play();
+    }
+
     private void newFile() {
         if (checkSave()) {
             textArea.clear();
@@ -113,49 +185,52 @@ public class Notepad extends JavOSWindow {
 
     private void openFile() {
         if (checkSave()) {
+            File dir = new File(System.getProperty("user.home"), "JavOSFiles");
+            if (!dir.exists()) dir.mkdirs();
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open File");
-            fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Text Files", "*.txt"),
-                new FileChooser.ExtensionFilter("All Files", "*.*")
-            );
-
+            fileChooser.setInitialDirectory(dir);
             File file = fileChooser.showOpenDialog(getScene().getWindow());
-            if (file != null) {
+            if (file != null && file.exists()) {
                 try {
-                    String content = Files.readString(file.toPath());
+                    String content = new String(Files.readAllBytes(file.toPath()));
                     textArea.setText(content);
                     currentFile = file.getAbsolutePath();
                     isModified = false;
                     updateTitle();
+                    addRecentFile(currentFile);
                 } catch (IOException e) {
-                    showError("Error opening file: " + e.getMessage());
+                    showError("Failed to open file: " + e.getMessage());
                 }
             }
         }
     }
 
     private void saveFile(boolean saveAs) {
-        if (currentFile == null || saveAs) {
+        File dir = new File(System.getProperty("user.home"), "JavOSFiles");
+        if (!dir.exists()) dir.mkdirs();
+        if (currentFile == null || saveAs || !currentFile.startsWith(dir.getAbsolutePath())) {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Save File");
-            fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Text Files", "*.txt"),
-                new FileChooser.ExtensionFilter("All Files", "*.*")
-            );
-
+            fileChooser.setInitialDirectory(dir);
+            fileChooser.setInitialFileName(currentFile != null ? new File(currentFile).getName() : "Untitled.txt");
             File file = fileChooser.showSaveDialog(getScene().getWindow());
             if (file != null) {
+                // Force save in JavOSFiles
+                if (!file.getParentFile().getAbsolutePath().equals(dir.getAbsolutePath())) {
+                    showError("You must save files in ~/JavOSFiles");
+                    return;
+                }
                 currentFile = file.getAbsolutePath();
             } else {
                 return;
             }
         }
-
         try {
-            Files.writeString(Path.of(currentFile), textArea.getText());
+            Files.write(Paths.get(currentFile), textArea.getText().getBytes());
             isModified = false;
             updateTitle();
+            addRecentFile(currentFile);
         } catch (IOException e) {
             showError("Error saving file: " + e.getMessage());
         }

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import javafx.scene.layout.Region;
 
 public class Calculator extends JavOSWindow {
     private TextField display;
@@ -34,10 +35,15 @@ public class Calculator extends JavOSWindow {
         super("Calculator", desktop);
         setPrefWidth(480);
         setPrefHeight(650);
+    }
+
+    @Override
+    protected Region createContent() {
         VBox content = new VBox(30);
-        content.setPadding(new Insets(40, 40, 40, 40));
+        content.setPadding(new Insets(10, 40, 40, 40));
         content.setStyle("-fx-background-color: rgba(44, 62, 80, 0.55); -fx-background-radius: 32; -fx-effect: dropshadow(gaussian, rgba(52,152,219,0.18), 40, 0.2, 0, 8);");
         content.setAlignment(Pos.TOP_CENTER);
+        VBox.setMargin(content, new Insets(40, 0, 0, 0));
 
         display = new TextField();
         display.setFont(Font.font("Consolas", 36));
@@ -86,9 +92,8 @@ public class Calculator extends JavOSWindow {
 
         content.getChildren().addAll(display, sciGrid, grid);
         VBox.setVgrow(grid, Priority.ALWAYS);
-        getChildren().clear();
-        getChildren().add(content);
         resetAll();
+        return content;
     }
 
     private Button createButton(String text, boolean scientific) {
